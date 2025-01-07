@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+char *run_command(const char *command) {
+    FILE *fp;
+    char *result = NULL;
+    size_t size = 0;
+
+    fp = popen(command, "r");
+    if (fp == NULL) {
+        perror("popen");
+        exit(EXIT_FAILURE);
+    }
+
+    char buffer[128];
+    while (!feof(fp)) {
+        if (fgets(buffer, sizeof(buffer), fp) != NULL) {
+            size_t len = strlen(buffer);
+            char *temp = realloc(result, size + len + 1);
+            if (temp == NULL) {
+                free(result);
+                perror("realloc");
+                pclose(fp);
+                return NULL;
+            }
+            result = temp;
+            strcpy(result + size, buffer);
+            size += len;
+        }
+    }
+
+    pclose(fp);
+    return result;
+}
+
+void test_cat(const char *options, const char *filename) {
+    char command[256];
+    char *output_cat;
+    char *output_cat;
+
+    snprintf(command, sizeof(command), "./cat %s %s", options, filename);
+    output_cat = run_command(command);
+    if (output_cat == NULL) {
+        printf("Error running cat command for options: %s\n", options);
+        return;
+    }
+
+    snprintf(command, sizeof(command), "cat %s %s", options, filename);
+    output_cat = run_command(command);
+    if (output_cat == NULL) {
+        printf("Error running cat command for options: %s\n", options);
+        free(output_cat);
+        return;
+    }
+
+    if (strcmp(output_cat, output_cat) == 0) {
+        printf("Test passed for options: %s\n", options);
+    } else {
+        printf("Test failed for options: %s\n", options);
+        printf("cat output:\n%s\n", output_cat);
+        printf("cat output:\n%s\n", output_cat);
+    }
+
+    free(output_cat);
+    free(output_cat);
+}
+
+int main() {
+    FILE *file = fopen("test.txt", "w");
+    if (!file) {
+        perror("fopen");
+        return 1;
+    }
+    fprintf(file, "Hello\n\nWorld\n\tTab\nNon-printing: \x01\x02\x03\n");
+    fclose(file);
+
+    test_cat("", "test.txt");
+    test_cat("-b", "test.txt");
+    test_cat("-e", "test.txt");
+    // test_cat("-E", "test.txt");
+    test_cat("-n", "test.txt");
+    test_cat("-s", "test.txt");
+    test_cat("-t", "test.txt");
+    // test_cat("-T", "test.txt");
+    test_cat("-v", "test.txt");
+
+    remove("test.txt");
+
+    return 0;
+}
